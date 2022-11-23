@@ -1,4 +1,9 @@
 
+
+// when bridging from the target chain to the main one, the user clicks a' bridge/transfer' button, which calls the burn function on the contract in the target chain and then calls the unlock function on the native chain contract
+// lock/mint and burn/unlock  - the fn() call pairs
+
+//SPDX license identifier: MIT
 pragma solidity 0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Token.sol";
@@ -61,7 +66,7 @@ function unlock(address _nativeToken, uint256 _amount, address _receiver) extern
     }
 }
 
-function burn (address _token, uint256 _amount, address _receiver) external {    //ask Kris if this should be accessed only by the wallet in the node app a.k.a the operator 
+function burn (address _token, uint256 _amount) external {    //ask Kris if this should be accessed only by the wallet in the node app a.k.a the operator 
         Token(_token).burn(msg.sender, _amount);
         emit Burn(_token, _amount, msg.sender);
 }
