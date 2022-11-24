@@ -8,7 +8,7 @@
 pragma solidity 0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Token.sol";
-contract Bridge is Ownable {
+contract BridgeBsc is Ownable {
 error YouMustPayTheServiceFee();
 
 mapping (address=>address) nativeToTargetTokenMapping;

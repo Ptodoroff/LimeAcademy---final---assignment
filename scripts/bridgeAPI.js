@@ -14,3 +14,11 @@ const EthProvider = new ethers.providers.JsonRpcProvider(
 );
 
 const operatorPrivateKey = process.env.PRIVATE_KEY;
+
+const 
+
+//=======================================================
+// contract instances
+//=======================================================
+
+
