@@ -54,11 +54,13 @@ async function main() {
 
   bridgeEthContract.on("Lock", async (_targetChain, _mainToken, _amount) => {
     let tempContract = new hre.ethers.Contract(_mainToken, tokenAbi, ethSigner);
+    let tempContractName = await tempContract.name();
+    let tempContractSymbol = await tempContract.symbol();
     let tempContractDecimals = await tempContract.decimals(); //getting the decimals for every contract like so, as there are coins with different decimals (e.g. USDT)
     let info = {
       chain: _targetChain,
       _mainToken: _mainToken,
-      amount: ethers.utils.formatUnits(_amount, 18),
+      amount: ethers.utils.formatUnits(_amount, tempContractDecimals),
     };
 
     console.log(
@@ -66,6 +68,18 @@ async function main() {
         "========================================================================================= \n" +
         JSON.stringify(info) +
         "\n========================================================================================="
+    );
+    console.log(`"========================================================================================= \n"
+${"Calling mint() on the bridge contract, deployed at the target chain ... \n"}
+"\n========================================================================================="`);
+
+    bridgeBscContract.mint(
+      tempContractName,
+      tempContractSymbol,
+      tempContractDecimals,
+      _amount,
+      "0x6ba46f7a83e59fa7d18bc9510c73163823833922",
+      _mainToken
     );
   });
 }
