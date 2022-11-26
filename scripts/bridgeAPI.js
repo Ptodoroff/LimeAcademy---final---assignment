@@ -25,62 +25,109 @@ async function main() {
   // contract instances
   //=======================================================
   const bridgeEthContract = new hre.ethers.Contract(
-    "0x8fbEC3Ac6fA5A5E35Ad4c381998c719F66F0DB53",
+    "0x8935d0304b14edf399868aC378eFbD579d9798ff",
     bridgeAbi,
     ethSigner
   );
   const bridgeBscContract = new hre.ethers.Contract(
-    "0x29DAFF10e82C62FF20aD4DcDEBa33ccA739b6597",
+    "0xF8A7bB414684d53e06f01729c5D2b2250F15D4fC",
     bridgeAbi,
     bscSigner
   );
   console.log(
-    "========================================================================================="
+    "==============================================================================================================="
   );
   console.log(`Hey there, ${wallet.address}, welcome to the Bridge CLI. :)`);
   console.log(
-    "========================================================================================="
+    "==============================================================================================================="
   );
   console.log(
     ` Listening for bridge contract events from: \n ${bridgeEthContract.address} on Goerli \n and \n ${bridgeBscContract.address} on BSC the testnet`
   );
   console.log(
-    "========================================================================================="
+    "==============================================================================================================="
   );
 
   //=======================================================
   // event listeners - Ethereum
   //=======================================================
 
-  bridgeEthContract.on("Lock", async (_targetChain, _mainToken, _amount) => {
+  bridgeEthContract.on("Lock", async (_mainToken, _amount, sender) => {
     let tempContract = new hre.ethers.Contract(_mainToken, tokenAbi, ethSigner);
     let tempContractName = await tempContract.name();
     let tempContractSymbol = await tempContract.symbol();
     let tempContractDecimals = await tempContract.decimals(); //getting the decimals for every contract like so, as there are coins with different decimals (e.g. USDT)
     let info = {
-      chain: _targetChain,
       _mainToken: _mainToken,
-      amount: ethers.utils.formatUnits(_amount, tempContractDecimals),
+      _amount: ethers.utils.formatUnits(_amount, tempContractDecimals),
+      _sender: sender,
     };
 
     console.log(
-      "New event detected! \n" +
-        "========================================================================================= \n" +
+      "New Mint event detected! \n" +
+        "=============================================================================================================== \n" +
         JSON.stringify(info) +
-        "\n========================================================================================="
+        "\n==============================================================================================================="
     );
-    console.log(`"========================================================================================= \n"
-${"Calling mint() on the bridge contract, deployed at the target chain ... \n"}
-"\n========================================================================================="`);
+    console.log(
+      `${"Calling mint() on the bridge contract, deployed at the target chain ..."}`
+    );
 
-    bridgeBscContract.mint(
+    let tx = await bridgeBscContract.mint(
       tempContractName,
       tempContractSymbol,
       tempContractDecimals,
       _amount,
-      "0x6ba46f7a83e59fa7d18bc9510c73163823833922",
+      sender,
       _mainToken
     );
+    (await tx.wait())
+      ? console.log(
+          `=============================================================================================================== \nSuccessfully minted ${info._amount} b${tempContractName} tokens on the target chain. :)`
+        )
+      : console.log(
+          `Error with minting. Please check if the operator wallet is funded with enough BNB. ;(`
+        );
+  });
+
+  bridgeBscContract.on("Burn", async (_token, _amount, _receiver) => {
+    let nativeTokenAddress = await bridgeBscContract.nativeToTargetTokenMapping(
+      _token
+    );
+    let tempContract = new hre.ethers.Contract(
+      nativeTokenAddress,
+      tokenAbi,
+      ethSigner
+    );
+    let name = await tempContract.name();
+    let decimals = await tempContract.decimals();
+    let formattedAmount = ethers.utils.formatUnits(_amount, decimals);
+    let info = {
+      token: _token,
+      amount: formattedAmount,
+      receiver: _receiver,
+    };
+    console.log(
+      "New Burn event detected! \n" +
+        "=============================================================================================================== \n" +
+        JSON.stringify(info) +
+        "\n==============================================================================================================="
+    );
+
+    console.log(
+      "calling unlock() on the bridge contract, deployed on the target chain ..."
+    );
+
+    let tx = await bridgeEthContract.unlock(
+      nativeTokenAddress,
+      _amount,
+      _receiver
+    );
+    (await tx.wait())
+      ? console.log(
+          `Successfully unlocked ${formattedAmount} ${name} tokens on the target chain. :)`
+        )
+      : `Unlock transaction was not successful. make sure the operator is funded with enough BNB. ;( ) `;
   });
 }
 
