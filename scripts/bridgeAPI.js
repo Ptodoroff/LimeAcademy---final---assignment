@@ -7,11 +7,9 @@ async function main() {
   //=======================================================
   // providers,wallet and operator signer instances
   //=======================================================
-  const BscProvider = new ethers.providers.JsonRpcProvider(
-    `${process.env.BSC_URL}`
-  );
+  const BscProvider = new ethers.providers.JsonRpcProvider(process.env.BSC_URL);
   const EthProvider = new ethers.providers.JsonRpcProvider(
-    `${process.env.GOERLI_URL}`
+    process.env.GOERLI_URL
   );
 
   const wallet = new hre.ethers.Wallet(process.env.PRIVATE_KEY);
@@ -25,12 +23,12 @@ async function main() {
   // contract instances
   //=======================================================
   const bridgeEthContract = new hre.ethers.Contract(
-    "0x8935d0304b14edf399868aC378eFbD579d9798ff",
+    "0xCC015131202B3A9a1b80E50075Fda2bAEED55252",
     bridgeAbi,
     ethSigner
   );
   const bridgeBscContract = new hre.ethers.Contract(
-    "0xF8A7bB414684d53e06f01729c5D2b2250F15D4fC",
+    "0xB61f00Fd986CA2010253B2De85E9A79beEc28926",
     bridgeAbi,
     bscSigner
   );

@@ -29,7 +29,7 @@ function lock (address _mainToken, uint _amount)  external payable{
           payable(Ownable.owner()).transfer(msg.value) ;  
           amountLocked[_mainToken][msg.sender] += _amount;  
           Token(_mainToken).transferFrom(msg.sender, address(this), _amount); 
-          Token(_mainToken).approve(address(this),_amount); // the owner is now the contract so it needs to allow the operator to spend tokens on its behalf
+          Token(_mainToken).approve(address(this),_amount); 
           emit Lock(_mainToken,_amount, msg.sender);
     }
 }
@@ -52,8 +52,8 @@ function mint (string memory  _tokenName, string memory _tokenSymbol, uint8 _dec
 }
 
 
-function unlock(address _nativeToken, uint256 _amount, address _receiver) external  onlyOwner {   
-        amountLocked[_nativeToken][msg.sender] -= _amount;
+function unlock(address _nativeToken, uint256 _amount, address _receiver) external  onlyOwner {  
+        amountLocked[_nativeToken][_receiver] -= _amount;
         Token(_nativeToken).transferFrom(address(this),_receiver, _amount);
           emit Unlock( _nativeToken,  _amount,  _receiver);
     
