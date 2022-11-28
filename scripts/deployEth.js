@@ -2,13 +2,13 @@ const { ethers } = require("hardhat");
 const hre = require("hardhat");
 
 async function main() {
-  const BridgeEth = await ethers.getContractFactory("BridgeEth");
+  const BridgeEth = await ethers.getContractFactory("Bridge");
   const bridgeEth = await BridgeEth.deploy();
   await bridgeEth.deployed();
 
   await hre.run("verify:verify", {
     address: bridgeEth.address,
-    contract: "contracts/BridgeEth.sol:BridgeEth",
+    contract: "contracts/Bridge.sol:Bridge",
   });
   console.log(
     "contract deployed and verified on Goerli at address:   " +

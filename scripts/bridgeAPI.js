@@ -1,8 +1,7 @@
 const { ethers, artifacts } = require("hardhat");
 const hre = require("hardhat");
-const bridgeEth = require("../artifacts/contracts/BridgeEth.sol/BridgeEth.json");
-const bridgeBsc = require("../artifacts/contracts/BridgeBsc.sol/BridgeBsc.json");
-const token = require("../artifacts/contracts/Token.sol/Token.json");
+const bridgeEth = require("../artifacts/contracts/Bridge.sol/Bridge.json");
+const token = require("../artifacts/contracts/WrappedToken.sol/WrappedToken.json");
 async function main() {
   //=======================================================
   // providers,wallet and operator signer instances
@@ -23,12 +22,12 @@ async function main() {
   // contract instances
   //=======================================================
   const bridgeEthContract = new hre.ethers.Contract(
-    "0xCC015131202B3A9a1b80E50075Fda2bAEED55252",
+    "0x48035166ef471a0EFC5d80D54d62Bc9F58973a32",
     bridgeAbi,
     ethSigner
   );
   const bridgeBscContract = new hre.ethers.Contract(
-    "0xB61f00Fd986CA2010253B2De85E9A79beEc28926",
+    "0x7474fF13C8A09497F873d37F84671a6d8bd5144a",
     bridgeAbi,
     bscSigner
   );
@@ -89,9 +88,7 @@ async function main() {
   });
 
   bridgeBscContract.on("Burn", async (_token, _amount, _receiver) => {
-    let nativeTokenAddress = await bridgeBscContract.nativeToTargetTokenMapping(
-      _token
-    );
+    let nativeTokenAddress = await bridgeBscContract.nativeToWrapped(_token);
     let tempContract = new hre.ethers.Contract(
       nativeTokenAddress,
       tokenAbi,
