@@ -1,16 +1,16 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Token.sol";
+import "./WrappedToken.sol";
 
 contract Bridge is Ownable {
-  error YouMustPayTheServiceFee();
-  error InputMoreThanBalance();
+  error NoServiceFee();
+  error InsufficientBalance();
 
-  mapping(address => address) public nativeToTargetTokenMapping;
-  mapping(string => address) tokens;
+  mapping(address => address) public nativeToWrapped;
+  mapping(string => address) wrappedTokens;
   mapping(address => mapping(address => uint)) amountLocked;
-  bytes2 private wrapPrefix = "b";
+  bytes2 private wrapPrefix = "w";
 
   uint public constant fee = 30000000000000000;
 
@@ -19,16 +19,15 @@ contract Bridge is Ownable {
   event Mint(address token, uint256 amount, address receiver);
   event Burn(address token, uint256 amount, address receiver);
 
-  function lock(address _mainToken, uint _amount) external payable {
+  function lock(address _nativeToken, uint _amount) external payable {
     if (msg.value != fee) {
-      revert YouMustPayTheServiceFee();
-    } else {
-      payable(Ownable.owner()).transfer(msg.value);
-      amountLocked[_mainToken][msg.sender] += _amount;
-      Token(_mainToken).transferFrom(msg.sender, address(this), _amount);
-      Token(_mainToken).approve(address(this), _amount);
-      emit Lock(_mainToken, _amount, msg.sender);
+      revert NoServiceFee();
     }
+    payable(Ownable.owner()).transfer(msg.value);
+    amountLocked[_nativeToken][msg.sender] += _amount;
+    Token(_nativeToken).transferFrom(msg.sender, address(this), _amount);
+    Token(_nativeToken).approve(address(this), _amount);
+    emit Lock(_nativeToken, _amount, msg.sender);
   }
 
   function mint(
@@ -39,23 +38,19 @@ contract Bridge is Ownable {
     address _receiver,
     address _nativeToken
   ) external onlyOwner {
-    Token token;
-    string memory _wrappedName = string(
-      abi.encodePacked(wrapPrefix, _tokenName)
-    );
-    if (tokens[_wrappedName] == address(0x0)) {
-      string memory _wrappedSymbol = string(
-        abi.encodePacked(wrapPrefix, _tokenSymbol)
-      );
-      token = new Token(_wrappedName, _wrappedSymbol, _decimals);
-      address _tokenAddress = address(token);
-      tokens[_wrappedName] = _tokenAddress;
-      nativeToTargetTokenMapping[_tokenAddress] = _nativeToken;
+    Token wrappedToken;
+    string memory wrappedName = string.concat("w", _tokenName);
+    if (wrappedTokens[wrappedName] == address(0x0)) {
+      string memory wrappedSymbol = string.concat("w", _tokenSymbol);
+      wrappedToken = new Token(wrappedName, wrappedSymbol, _decimals);
+      address tokenAddress = address(wrappedToken);
+      wrappedTokens[wrappedName] = tokenAddress;
+      nativeToWrapped[tokenAddress] = _nativeToken;
     } else {
-      token = Token(tokens[_wrappedName]);
+      wrappedToken = Token(wrappedTokens[wrappedName]);
     }
-    token.mint(_receiver, _amount);
-    emit Mint(address(token), _amount, _receiver);
+    wrappedToken.mint(_receiver, _amount);
+    emit Mint(address(wrappedToken), _amount, _receiver);
   }
 
   function unlock(
@@ -70,9 +65,9 @@ contract Bridge is Ownable {
 
   function burn(address _nativeToken, uint256 _amount) external payable {
     if (msg.value != fee) {
-      revert YouMustPayTheServiceFee();
+      revert NoServiceFee();
     } else if (Token(_nativeToken).balanceOf(msg.sender) < _amount) {
-      revert InputMoreThanBalance();
+      revert InsufficientBalance();
     } else {
       payable(Ownable.owner()).transfer(msg.value);
       Token(_nativeToken).burn(msg.sender, _amount);
