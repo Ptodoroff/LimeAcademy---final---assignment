@@ -8,7 +8,6 @@ contract Bridge is Ownable {
   error InsufficientBalance();
 
   mapping(address => address) public nativeToWrapped;
-  mapping(string => address) wrappedTokens;
   mapping(address => mapping(address => uint)) amountLocked;
   bytes2 private wrapPrefix = "w";
 
@@ -40,14 +39,14 @@ contract Bridge is Ownable {
   ) external onlyOwner {
     WrappedToken wrappedToken;
     string memory wrappedName = string.concat("w", _tokenName);
-    if (wrappedTokens[wrappedName] == address(0x0)) {
+    if (nativeToWrapped[_nativeToken] == address(0x0)) {
       string memory wrappedSymbol = string.concat("w", _tokenSymbol);
       wrappedToken = new WrappedToken(wrappedName, wrappedSymbol, _decimals);
       address tokenAddress = address(wrappedToken);
-      wrappedTokens[wrappedName] = tokenAddress;
+      nativeToWrapped[_nativeToken] = tokenAddress;
       nativeToWrapped[tokenAddress] = _nativeToken;
     } else {
-      wrappedToken = WrappedToken(wrappedTokens[wrappedName]);
+      wrappedToken = WrappedToken(nativeToWrapped[_nativeToken]);
     }
     wrappedToken.mint(_receiver, _amount);
     emit Mint(address(wrappedToken), _amount, _receiver);

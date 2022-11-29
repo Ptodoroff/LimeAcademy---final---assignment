@@ -92,6 +92,41 @@ describe("Testing the bridge smart contract ... ", () => {
     assert(capturedValue != 0x0);
     assert((await bridge.nativeToWrapped(capturedValue)) == tokenAddress);
   });
+  it(" mint not create another wrapped token instance, if it has been created before", async () => {
+    let amount = 10;
+    let name = await token.name();
+    let symbol = await token.symbol();
+    let decimals = await token.decimals();
+    let tokenAddress = token.address;
+    await token.mint(addr1.address, amount);
+    await token.connect(addr1).approve(bridge.address, amount);
+    await bridge.connect(addr1).lock(token.address, amount, { value: fee });
+    await bridge.mint(
+      name,
+      symbol,
+      decimals,
+      amount,
+      addr1.address,
+      tokenAddress
+    );
+    let wrappedTokenAddressAfterFirstMint = await bridge.nativeToWrapped(
+      tokenAddress
+    );
+    await bridge.mint(
+      name,
+      symbol,
+      decimals,
+      amount,
+      addr1.address,
+      tokenAddress
+    );
+    let wrappedTokenAddressAfterSecondMint = await bridge.nativeToWrapped(
+      tokenAddress
+    );
+    expect(wrappedTokenAddressAfterFirstMint).to.equal(
+      wrappedTokenAddressAfterSecondMint
+    );
+  });
   it("should revert if unlock() is not called by the owner", async () => {
     let amount = 10;
     await token.mint(addr1.address, amount);
