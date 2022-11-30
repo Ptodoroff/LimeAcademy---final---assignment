@@ -70,7 +70,7 @@ describe("Testing the bridge smart contract ... ", () => {
       bridge.mint(name, symbol, decimals, amount, addr1.address, tokenAddress)
     ).to.emit(bridge, "Mint");
   });
-  it(" Should generate an address for the newly created wrapped token", async () => {
+  it("Should generate an address for the newly created wrapped token", async () => {
     let capturedValue;
     const captureValue = (value) => {
       capturedValue = value;
@@ -92,7 +92,7 @@ describe("Testing the bridge smart contract ... ", () => {
     assert(capturedValue != 0x0);
     assert((await bridge.nativeToWrapped(capturedValue)) == tokenAddress);
   });
-  it(" mint not create another wrapped token instance, if it has been created before", async () => {
+  it("Should not create another wrapped token instance, if it has been created before", async () => {
     let amount = 10;
     let name = await token.name();
     let symbol = await token.symbol();
@@ -146,7 +146,7 @@ describe("Testing the bridge smart contract ... ", () => {
       "Unlock"
     );
   });
-  it("Should revert if the user attempts to bridge back an amount, gretaer than his balance", async () => {
+  it("Should revert if the user attempts to bridge back an amount, greater than his balance", async () => {
     let amount = 10;
     await token.mint(addr1.address, amount);
     await token.connect(addr1).approve(bridge.address, amount);

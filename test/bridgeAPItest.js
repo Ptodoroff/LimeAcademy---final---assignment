@@ -9,6 +9,7 @@ async function main() {
   //=======================================================
   // providers,wallet and operator signer instances
   //=======================================================
+  [owner, addr1, addr2] = await ethers.getSigners();
   const BscProvider = new ethers.providers.JsonRpcProvider(
     "http://127.0.0.1:8545/"
   );
@@ -16,7 +17,9 @@ async function main() {
     "http://127.0.0.1:8546/"
   );
 
-  const wallet = new hre.ethers.Wallet(process.env.PRIVATE_KEY);
+  const wallet = new hre.ethers.Wallet(
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  );
   const ethSigner = wallet.connect(EthProvider);
   const bscSigner = wallet.connect(BscProvider);
 
@@ -28,6 +31,9 @@ async function main() {
   let BridgeBsc = await ethers.getContractFactory("Bridge");
   let bridgeBsc = await BridgeBsc.deploy();
   await bridgeEth.deployed();
+  let Token = await ethers.getContractFactory("WrappedToken");
+  let token = await Token.deploy("BridgeToken", "BT", 18);
+  await token.deployed();
   const bridgeEthContract = new hre.ethers.Contract(
     bridgeEth.address,
     bridgeAbi,

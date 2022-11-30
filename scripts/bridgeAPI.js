@@ -22,12 +22,12 @@ async function main() {
   // contract instances
   //=======================================================
   const bridgeEthContract = new hre.ethers.Contract(
-    "0x48035166ef471a0EFC5d80D54d62Bc9F58973a32",
+    "0xE34FF472d19b84532D984FefEB0b7F46A4738c6b",
     bridgeAbi,
     ethSigner
   );
   const bridgeBscContract = new hre.ethers.Contract(
-    "0x7474fF13C8A09497F873d37F84671a6d8bd5144a",
+    "0x8498240A33b57BF61aFA8699f20424F298677FFf",
     bridgeAbi,
     bscSigner
   );
