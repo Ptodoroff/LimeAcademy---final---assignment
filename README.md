@@ -1,4 +1,4 @@
-> Todoroff Events Co. - a decentralised marketplace application to create events and buy tickets.
+> LimeAcademy Cohort IV final task - a ETH - BNB token bridge
 
 ---
 
