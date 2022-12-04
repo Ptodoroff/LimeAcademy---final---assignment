@@ -37,13 +37,13 @@ contract Bridge is Ownable {
   ) external onlyOwner {
     WrappedToken wrappedToken;
     string memory wrappedName = string.concat("w", _tokenName);
-    if (wrappedToNative[_nativeToken] == address(0x0)) {
+    if (wrappedToNative[_nativeToken] != address(0x0)) {
+      wrappedToken = WrappedToken(wrappedToNative[_nativeToken]);
+    } else {
       string memory wrappedSymbol = string.concat("w", _tokenSymbol);
       wrappedToken = new WrappedToken(wrappedName, wrappedSymbol, _decimals);
       address tokenAddress = address(wrappedToken);
       wrappedToNative[tokenAddress] = _nativeToken;
-    } else {
-      wrappedToken = WrappedToken(wrappedToNative[_nativeToken]);
     }
     wrappedToken.mint(_receiver, _amount);
     emit Mint(address(wrappedToken), _amount, _receiver);
@@ -54,7 +54,7 @@ contract Bridge is Ownable {
     uint256 _amount,
     address _receiver
   ) external onlyOwner {
-    WrappedToken(_nativeToken).transferFrom(address(this), _receiver, _amount);
+    ERC20(_nativeToken).transferFrom(address(this), _receiver, _amount);
     emit Unlock(_nativeToken, _amount, _receiver);
   }
 
@@ -64,14 +64,12 @@ contract Bridge is Ownable {
   ) external payable {
     if (msg.value != fee) {
       revert NoServiceFee();
-    } else if (
-      WrappedToken(_wrappedTokenAddress).balanceOf(msg.sender) < _amount
-    ) {
-      revert InsufficientBalance();
-    } else {
-      payable(Ownable.owner()).transfer(msg.value);
-      WrappedToken(_wrappedTokenAddress).burn(msg.sender, _amount);
-      emit Burn(_wrappedTokenAddress, _amount, msg.sender);
     }
+    if (WrappedToken(_wrappedTokenAddress).balanceOf(msg.sender) < _amount) {
+      revert InsufficientBalance();
+    }
+    payable(Ownable.owner()).transfer(msg.value);
+    WrappedToken(_wrappedTokenAddress).burn(msg.sender, _amount);
+    emit Burn(_wrappedTokenAddress, _amount, msg.sender);
   }
 }
