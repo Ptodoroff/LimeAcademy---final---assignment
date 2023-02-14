@@ -6,14 +6,7 @@ async function main() {
   const bridgeEth = await BridgeEth.deploy();
   await bridgeEth.deployed();
 
-  await hre.run("verify:verify", {
-    address: bridgeEth.address,
-    contract: "contracts/Bridge.sol:Bridge",
-  });
-  console.log(
-    "contract deployed and verified on Goerli at address:   " +
-      `https://goerli.etherscan.io/address/${bridgeEth.address}`
-  );
+  console.log(`BridgeEth deployed to: ${bridgeEth.address}`);
 }
 
 main().catch((error) => {

@@ -12,19 +12,13 @@ module.exports = {
     },
   },
   networks: {
-    goerli: {
-      url: process.env.GOERLI_URL,
+    localhost1: {
+      url: "http://127.0.0.1:8545",
       accounts: [process.env.PRIVATE_KEY],
     },
-    bscTestnet: {
-      url: process.env.BSC_TESTNET_URL,
+    localhost2: {
+      url: "http://127.0.0.1:8546",
       accounts: [process.env.PRIVATE_KEY],
-    },
-  },
-  etherscan: {
-    apiKey: {
-      goerli: process.env.ETHERSCAN_KEY,
-      bscTestnet: process.env.ETHERSCAN_KEY_BSC,
-    },
-  },
+    }
+  }
 };
